@@ -59,6 +59,10 @@ module.exports = {
                 test: /\.(ttf|woff|woff2)$/,
                 loader: 'file?name=[path][name].[ext]',
             },
+            {
+                test: /\.(mp3)$/,
+                loader: 'file?name=[path][name].[ext]',
+            },
         ],
     },
 
