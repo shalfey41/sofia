@@ -2,6 +2,9 @@
  * Created by Dmitry Bezugly <bezugly.ru> on 24.01.2017.
  */
 
-import legasy from './legasy';
+import './lib/createjs';
 
-legasy();
+import Stage from './js/view/stage';
+
+const stage = new Stage();
+stage.render();

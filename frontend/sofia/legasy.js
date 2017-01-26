@@ -3,11 +3,10 @@
  */
 
 import './lib/createjs';
+import * as image from './images';
+import * as audio from './audio';
 
 export default () => {
-    import * as image from './images';
-    import * as audio from './audio';
-
     const TILE_WIDTH = 100;
     const TILE_HEIGHT = 83;
     const TILE_OFFSET_Y = 9;

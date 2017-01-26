@@ -3,8 +3,16 @@
  */
 
 export default class Hero {
-    constructor(imageId) {
-        this.hero = new createjs.Bitmap(queue.getResult(imageId));
-        this.hero.regY = 15;
+    constructor(queue) {
+        this.player = new createjs.Bitmap(queue.getResult('hero'));
+    }
+
+    setReg() {
+        this.player.regY = 15;
+    }
+
+    reset(posX, posY) {
+        this.player.x = posX;
+        this.player.y = posY;
     }
 }
