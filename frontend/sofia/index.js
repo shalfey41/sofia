@@ -7,4 +7,4 @@ import './lib/createjs';
 import Stage from './js/view/stage';
 
 const stage = new Stage();
-stage.render();
+stage.initialize();

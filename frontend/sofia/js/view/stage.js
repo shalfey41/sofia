@@ -7,13 +7,21 @@ import * as audio from '../../audio';
 
 import Background from '../model/background';
 import Hero from '../model/hero';
-import Game from '../controller/game';
+import Enemy from '../model/enemy';
+import GameCounter from '../model/game-counter';
 
+/**
+ * Сцена игры
+ */
 export default class Stage {
-    render() {
+    /**
+     * Создание сцены
+     * Когда файлы загрузятся, сработает функция render
+     */
+    initialize() {
         this.stage = new createjs.Stage('game');
         this.queue = new createjs.LoadQueue(false);
-        this.queue.addEventListener('complete', this.init.bind(this));
+        this.queue.addEventListener('complete', this.render.bind(this));
         this.queue.loadManifest([
             { id: 'hero', src: image.boy },
             { id: 'stone', src: image.stone },
@@ -25,16 +33,82 @@ export default class Stage {
         ]);
     }
 
-    init() {
-        const background = new Background(this.queue);
-        background.createBackground(this.stage);
+    /**
+     * Рендер элементов на сцене
+     */
+    render() {
+        this.background = new Background(this.queue);
+        this.background.createBackground(this.stage);
 
-        const hero = new Hero(this.queue);
-        hero.setReg();
-        hero.reset(background.TILE_WIDTH * 3, background.TILE_HEIGHT * 5);
-        this.stage.addChild(hero.player);
+        this.hero = new Hero(this.queue, this.background.tileSize);
+        this.stage.addChild(this.hero.player);
 
-        const game = new Game(this.stage, hero, background);
-        game.play();
+        this.rocks = new Enemy(4, this.stage, this.queue);
+        this.rocks.resetAll(this.background.tileSize);
+
+        this.gameCounter = new GameCounter();
+        this.stage.addChild(this.gameCounter.levelPosition);
+        this.stage.addChild(this.gameCounter.timerPosition);
+
+        createjs.Sound.play('background', { loop: -1 });
+
+        this.setEvents();
+    }
+
+    /**
+     * Подписка на события
+     */
+    setEvents() {
+        createjs.Ticker.timingMode = createjs.Ticker.RAF;
+        createjs.Ticker.addEventListener('tick', this.onTick.bind(this));
+
+        window.addEventListener('keydown', this.onKeyDown.bind(this));
+    }
+
+    /**
+     * Обновляет сцену
+     */
+    onTick() {
+        this.rocks.move(this.background.tileSize, this.gameCounter.levelNumber);
+
+        this.checkCollision();
+
+        this.stage.update();
+    }
+
+    /**
+     * Обработчик клавиатуры
+     *
+     * @param e - нажатый элемент
+     */
+    onKeyDown(e) {
+        this.hero.move(e.keyCode, this.background.tileSize);
+    }
+
+    /**
+     * Перезапуск игры, если герой столкнулся с препятсвием
+     */
+    checkCollision() {
+        if (this.isCollision()) {
+            this.rocks.resetAll(this.background.tileSize);
+            this.hero.reset();
+            this.gameCounter.resetLevel();
+        }
+    }
+
+    /**
+     * Проверка на столкновение героя и препятствий
+     */
+    isCollision() {
+        const heroX = this.hero.positionX;
+        const heroY = this.hero.positionY;
+        const tile = this.background.tileSize;
+
+        return this.rocks.enemies.some((rock) => {
+            return rock.y > heroY - tile.height &&
+                heroX < rock.x + (tile.width * 0.75) &&
+                rock.y < heroY &&
+                rock.x < heroX + (tile.width * 0.75);
+        });
     }
 }
